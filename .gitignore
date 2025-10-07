@@ -1,0 +1,36 @@
+# Python virtual environments
+.venv/
+
+# Python build artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+python/build/
+python/dist/
+python/*.egg-info/
+python/.pytest_cache/
+python/target/
+python/bpe_openai/_bindings*.so
+python/wheels/
+
+# Rust build artifacts
+rust/target/
+Cargo.lock
+
+# Vendor dependencies
+vendor/**/target/
+
+# Tool caches
+.pytest_cache/
+.maturin-cache/
+
+# Editors/OS
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Wheels and sdist
+python/target/

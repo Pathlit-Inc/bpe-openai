@@ -1,0 +1,4 @@
+In a distant future, engineers rely on shared tokenizer libraries to measure
+model usage, cost forecasts, and compliance logs. Any drift in tokenization
+changes financial projections and can invalidate safety reviews, so parity
+between tooling stacks is non-negotiable.

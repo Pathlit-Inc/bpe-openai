@@ -1,0 +1,17 @@
+[package]
+name = "bpe-openai"
+requires-python = ">=3.9"
+description = "Tiktoken-compatible Python bindings for the Rust bpe-openai tokenizer crate"
+license = "MIT"
+
+[tool.maturin]
+python-source = "bpe_openai"
+module-name = "bpe_openai._bindings"
+bindings = "pyo3"
+strip = true
+
+[tool.maturin.targets]
+manylinux = ["2014"]
+musllinux = ["1_2"]
+windows = ["amd64"]
+macos = ["x86_64", "aarch64"]
