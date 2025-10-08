@@ -7,8 +7,14 @@ from importlib import import_module
 from pathlib import Path
 from typing import Dict
 
+try:  # Python >= 3.9
+    from importlib import resources
+except ImportError:  # pragma: no cover - fallback
+    import importlib_resources as resources  # type: ignore
 
-_DATA_DIR = (
+
+_DATA_PACKAGE = "bpe_openai.data"
+_VENDOR_DATA_DIR = (
     Path(__file__).resolve().parents[2]
     / "vendor"
     / "rust-gems"
@@ -18,17 +24,21 @@ _DATA_DIR = (
 )
 
 
-def _data_path(stem: str) -> Path:
-    path = _DATA_DIR / f"{stem}.tiktoken.gz"
-    if not path.is_file():  # pragma: no cover - defensive
-        raise FileNotFoundError(f"Missing tokenizer data file: {path}")
-    return path
+def _open_tokenizer_data(stem: str):
+    resource_name = f"{stem}.tiktoken.gz"
+    try:
+        return resources.open_binary(_DATA_PACKAGE, resource_name)
+    except (FileNotFoundError, ModuleNotFoundError, AttributeError):
+        fallback = _VENDOR_DATA_DIR / resource_name
+        if not fallback.is_file():  # pragma: no cover - defensive
+            raise FileNotFoundError(f"Missing tokenizer data file: {fallback}")
+        return open(fallback, "rb")
 
 
 @lru_cache(maxsize=None)
 def _load_mergeable_ranks(stem: str) -> Dict[bytes, int]:
     mergeable: Dict[bytes, int] = {}
-    with gzip.open(_data_path(stem), "rt", encoding="utf-8") as handle:
+    with _open_tokenizer_data(stem) as raw, gzip.open(raw, "rt", encoding="utf-8") as handle:
         for line in handle:
             line = line.strip()
             if not line:
