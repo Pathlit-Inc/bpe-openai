@@ -41,3 +41,10 @@ features = ["pyo3/extension-module"]
 strip = true
 bindings = "pyo3"
 compatibility = "manylinux2014"
+sdist-include = [
+    "../README.md",
+    "../LICENSE",
+    "../scripts/**",
+    "../vendor/**",
+    "../rust/**",
+]
