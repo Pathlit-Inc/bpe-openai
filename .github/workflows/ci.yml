@@ -70,7 +70,7 @@ jobs:
           PYTHONPATH: python
         run: |
           source .venv/bin/activate
-          python scripts/benchmark_scaling.py --lengths 32 128 --batch-size 4 --output python/target/ci_benchmark.png
+          python scripts/benchmark_scaling.py --output python/target/ci_benchmark.png
 
       - name: Upload benchmark artifact
         uses: actions/upload-artifact@v4
