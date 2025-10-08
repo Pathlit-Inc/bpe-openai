@@ -29,10 +29,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install maturin pytest hypothesis tiktoken matplotlib
 
-      - name: Build Python extension (maturin develop)
+      - name: Build Python wheel
         working-directory: python
         run: |
-          maturin develop --release
+          maturin build --release -o dist
+          pip install dist/*.whl
 
       - name: Cargo tests
         run: cargo test --manifest-path rust/Cargo.toml --locked
