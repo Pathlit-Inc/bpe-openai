@@ -345,8 +345,6 @@ class Encoding:
     def _encode_plain(self, text: str) -> list[int]:
         if not text:
             return []
-        if len(text) >= 1_000_000:
-            raise ValueError("Input too long to encode safely")
         try:
             tokens = self._backend.encode(text)
         except UnicodeEncodeError:
