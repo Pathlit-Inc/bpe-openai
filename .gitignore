@@ -36,3 +36,4 @@ vendor/**/target/
 python/target/
 
 .hypothesis/
+*.tiktoken.gz

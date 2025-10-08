@@ -44,7 +44,6 @@ compatibility = "manylinux2014"
 sdist-include = [
     "../README.md",
     "../LICENSE",
-    "../scripts/**",
-    "../vendor/**",
     "../rust/**",
+    "../vendor/rust-gems/**",
 ]

@@ -36,6 +36,11 @@ jobs:
           pip install --upgrade pip
           pip install maturin pytest hypothesis tiktoken matplotlib
 
+      - name: Sync tokenizer data
+        run: |
+          source .venv/bin/activate
+          python scripts/sync_tokenizer_data.py
+
       - name: Build Python extension
         working-directory: python
         run: |
