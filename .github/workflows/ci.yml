@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install maturin pytest hypothesis tiktoken matplotlib
+
+      - name: Build Python extension (maturin develop)
+        working-directory: python
+        run: |
+          maturin develop --release
+
+      - name: Cargo tests
+        run: cargo test --manifest-path rust/Cargo.toml --locked
+
+      - name: Pytest suite
+        working-directory: python
+        run: python -m pytest
+
+      - name: Vendored tiktoken tests
+        env:
+          PYTHONPATH: python
+        run: python scripts/run_tiktoken_tests.py
+
+      - name: Parity comparison script
+        env:
+          PYTHONPATH: python
+        run: python scripts/compare_with_tiktoken.py --json
+
+      - name: Benchmark script smoke test
+        env:
+          PYTHONPATH: python
+        run: python scripts/benchmark_scaling.py --lengths 32 128 --batch-size 4 --output python/target/ci_benchmark.png

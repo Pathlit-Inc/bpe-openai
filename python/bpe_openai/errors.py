@@ -36,7 +36,7 @@ class SpecialTokenCollisionError(TokenizerError):
 
 
 @dataclass
-class TokenLimitError(TokenizerError):
+class TokenLimitError(ValueError, TokenizerError):
     token_count: int
     chunk_limit: int
 
@@ -52,4 +52,3 @@ def raise_unsupported_model(model_name: str, supported: Iterable[str]) -> None:
 
 def raise_token_limit(token_count: int, chunk_limit: int) -> None:
     raise TokenLimitError(token_count=token_count, chunk_limit=chunk_limit)
-

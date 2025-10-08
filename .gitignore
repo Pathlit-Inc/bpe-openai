@@ -34,3 +34,5 @@ vendor/**/target/
 
 # Wheels and sdist
 python/target/
+
+.hypothesis/

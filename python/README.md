@@ -54,28 +54,19 @@ differences. Pass `--json` to capture machine-readable output.
 To inspect performance scaling, run:
 
 ```bash
-./scripts/benchmark_scaling.py --output python/target/benchmark_scaling.png
+./python/scripts/benchmark_scaling.py --batch-size 32 --output python/target/benchmark_scaling.png
 ```
 
-The script measures encode times for increasing input sizes and plots the
-results if matplotlib is installed (mirrored at the repo root for convenience).
-
-To inspect performance scaling, run:
-
-```bash
-./python/scripts/benchmark_scaling.py --output python/target/benchmark_scaling.png
-```
-
-This measures encoding time for increasing input sizes and, when matplotlib is
-available, plots the results so you can compare the linear scaling of
-`bpe_openai` with `tiktoken`.
+The script now captures both single-document and batched (`encode_batch`) timings for
+`tiktoken` and `bpe_openai` across the requested input lengths and, when matplotlib is installed,
+plots the results (a thin wrapper lives at the repo root under `scripts/benchmark_scaling.py`).
 
 ## tiktoken Compatibility Snapshot
 
 | Feature / API                              | Support Status | Notes |
 |--------------------------------------------|----------------|-------|
-| `encoding_for_model`                       | ✅              | Returns `Encoding` for all supported model aliases |
-| `get_encoding`                             | ✅              | Supports `cl100k_base`, `o200k_base`, `voyage3_base` |
+| `encoding_for_model`                       | ⚠️              | Works for backend-exposed models (`cl100k_base`, `o200k_base` family, `voyage3_base`); legacy GPT-2 / p50k families are skipped |
+| `get_encoding`                             | ⚠️              | Supports `cl100k_base`, `o200k_base`, `voyage3_base`; legacy GPT-2 / r50k / p50k encodings not yet implemented |
 | `Encoding.encode`                          | ✅              | Calls the Rust `bpe-openai` tokenizer for exact parity |
 | `Encoding.decode`                          | ✅              | Mirrors tiktoken behaviour (UTF-8 validation included) |
 | `Encoding.encode_batch` / `decode_batch`   | ✅              | Batch helpers mirror `tiktoken` signatures |

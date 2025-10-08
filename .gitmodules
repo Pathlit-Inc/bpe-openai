@@ -1,3 +1,6 @@
 [submodule "vendor/rust-gems"]
 	path = vendor/rust-gems
 	url = https://github.com/github/rust-gems.git
+[submodule "vendor/tiktoken"]
+	path = vendor/tiktoken
+	url = https://github.com/openai/tiktoken.git

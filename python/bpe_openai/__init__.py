@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from importlib import metadata
-from typing import Iterable, Optional, Sequence
+from typing import Iterable
 
 from . import compat
 from .errors import (
@@ -22,8 +22,10 @@ except metadata.PackageNotFoundError:  # pragma: no cover
 __all__ = [
     "Encoding",
     "encoding_for_model",
+    "encoding_name_for_model",
     "get_encoding",
     "list_supported_models",
+    "list_encoding_names",
     "TokenizerError",
     "UnsupportedModelError",
     "SpecialTokenCollisionError",
@@ -36,30 +38,20 @@ def list_supported_models() -> list[str]:
     return compat.list_supported_models()
 
 
-def _normalize_special_arg(value: Optional[Sequence[str] | str]) -> Optional[Sequence[str]]:
-    if value is None:
-        return None
-    if isinstance(value, str):
-        if value == "all":
-            return None
-        return [value]
-    return value
-
-
 def encoding_for_model(model_name: str) -> Encoding:
     return build_encoding_from_model(model_name)
 
 
-def get_encoding(
-    encoding_name: str,
-    *,
-    allowed_special: Optional[Sequence[str] | str] = None,
-    disallowed_special: Optional[Sequence[str] | str] = None,
-) -> Encoding:
-    allowed = _normalize_special_arg(allowed_special)
-    disallowed = _normalize_special_arg(disallowed_special)
-    return build_encoding_from_name(
-        encoding_name,
-        allowed_special=allowed,
-        disallowed_special=disallowed,
-    )
+def get_encoding(encoding_name: str) -> Encoding:
+    return build_encoding_from_name(encoding_name)
+
+
+def list_encoding_names() -> list[str]:
+    from . import registry
+
+    return sorted(registry.ENCODING_CONSTRUCTORS)
+
+
+def encoding_name_for_model(model_name: str) -> str:
+    metadata = compat.get_metadata(model_name)
+    return metadata.encoding
