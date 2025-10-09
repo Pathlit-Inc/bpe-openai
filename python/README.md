@@ -1,80 +1,111 @@
 # bpe-openai
 
-This directory contains the Python package that exposes the Rust `bpe-openai`
-tokenizer via PyO3 bindings. The package is a thin wrapper over the Rust crate;
-the compiled extension must be built before running tests or using the API.
+`bpe-openai` is a `tiktoken`-compatible tokenizer API backed by the Rust
+`bpe-openai` crate. Pathlit maintains the Python wrapper, while the core
+tokenizer implementation is developed by GitHub and published in the
+[`rust-gems`](https://github.com/github/rust-gems/tree/main/crates/bpe-openai)
+project. Published wheels bundle the tokenizer data, so the package works
+out of the box on Python 3.9 and newer.
 
-## Local development
+## Installation
+
+```bash
+pip install bpe-openai
+```
+
+Installing from a source distribution requires a Rust toolchain:
+
+```bash
+pip install --no-binary bpe-openai bpe-openai==<version>
+```
+
+## Quick start
+
+```python
+import bpe_openai as bpe
+
+enc = bpe.get_encoding("cl100k_base")
+tokens = enc.encode("Smoke tests keep releases honest.")
+print(tokens)
+print(enc.decode(tokens))
+
+# Model-aware helper
+chat_enc = bpe.encoding_for_model("gpt-4o")
+```
+
+## Compatibility snapshot
+
+| API / Feature                             | Status | Notes |
+|-------------------------------------------|--------|-------|
+| `get_encoding`, `encoding_for_model`      | ✅     | Supports `cl100k_base`, `o200k_base`, `voyage3_base`, and related models |
+| `Encoding.encode`, `Encoding.decode`      | ✅     | Rust backend ensures parity with `tiktoken` |
+| `Encoding.encode_batch`                   | ✅     | Matches `tiktoken`'s batching behaviour |
+| Custom special tokens                     | ⚠️     | Not yet configurable at runtime |
+| Legacy GPT-2 / r50k / p50k encodings      | ⚠️     | Planned; current focus is on modern OpenAI models |
+| Metrics hook (`set_metrics_hook`)         | ✅     | Emits model, token count, latency, backend version |
+
+Legend: ✅ fully supported · ⚠️ partial / planned
+
+## Why we built it
+
+Long, repetitive prompts can hit pathological slow paths in `tiktoken`. To
+stress-test both libraries we encoded inputs of the form `"A" * n` and measured
+latency. `bpe-openai` stays effectively flat while `tiktoken` grows sharply with
+input length, unlocking workloads like prompt templating and log chunking that
+stalled with the reference implementation.
+
+![Encoding time vs. input length](https://raw.githubusercontent.com/Pathlit-Inc/bpe-openai/main/scripts/benchmark_scaling.png)
+
+## Smoke test
+
+After installing from PyPI, run a quick confidence check:
+
+```bash
+python - <<'PY'
+import bpe_openai as bpe
+enc = bpe.get_encoding("cl100k_base")
+text = "Smoke tests keep releases honest."
+tokens = enc.encode(text)
+assert enc.decode(tokens) == text
+print("✅ bpe-openai smoke test passed.")
+PY
+```
+
+## Repository layout
+
+- `python/` – Python package wrapping the Rust tokenizer as a CPython extension.
+- `rust/` – Rust crate that loads tokenizer specs and exposes the fast BPE APIs.
+- `scripts/` – Helper utilities for benchmarking, parity checks, and data sync.
+- `vendor/` – Vendored tokenizer definitions sourced from GitHub's upstream release.
+
+## Development
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements-dev.txt  # optional, see below
+python scripts/sync_tokenizer_data.py  # ensures tokenizer assets are copied
+pip install maturin
+cd python
 maturin develop --release
 pytest
 ```
 
-Running `maturin develop --release` builds the Rust extension in-place so the
-package can be imported locally.
+The repository includes `scripts/sync_tokenizer_data.py` to copy the vendored
+`.tiktoken.gz` files into `python/bpe_openai/data/` before building wheels or an
+sdist.
 
-## Packaging
+## Release process (maintainers)
 
-```bash
-./python/scripts/build_wheels.sh
-```
+1. Update the version string in `python/pyproject.toml`. The runtime fallback
+   reads the same file, so one change keeps packaging metadata and
+   `bpe_openai.__version__` in sync.
+2. Run `python scripts/sync_tokenizer_data.py` to refresh bundled assets.
+3. Commit the changes and tag the release (`git tag vX.Y.Z`).
+4. Push the tag. The `Release Wheels` GitHub Actions workflow builds wheels,
+   publishes a GitHub release, and uploads to PyPI via Trusted Publishing.
 
-Requirements:
+## Contributing
 
-- Docker daemon access (the script exits if it cannot talk to `/var/run/docker.sock`).
-- Sufficient permissions to pull `quay.io/pypa/manylinux2014_x86_64` (override with
-  `MANYLINUX_IMAGE` if needed).
-- Optional: set `MANYLINUX_PYTHON` to pick a different interpreter inside the
-  container (defaults to `/opt/python/cp39-cp39/bin/python3.9`).
-
-The container installs `maturin` on the fly and runs `maturin build --release`,
-producing wheels under `python/target/wheels/` that meet manylinux requirements
-and therefore run on both old and new glibc releases.
-
-Additional scripts are mirrored at the repo root (`scripts/compare_with_tiktoken.py`,
-`scripts/benchmark_scaling.py`) for convenience when working outside the
-`python/` directory.
-
-## Parity Comparison
-
-To compare this package’s behaviour with upstream `tiktoken`, install
-`tiktoken` in a virtual environment alongside the wheel and run:
-
-```bash
-./python/scripts/compare_with_tiktoken.py
-```
-
-The command prints per-model encode/decode parity summaries and highlights any
-differences. Pass `--json` to capture machine-readable output.
-
-To inspect performance scaling, run:
-
-```bash
-./python/scripts/benchmark_scaling.py --batch-size 32 --output python/target/benchmark_scaling.png
-```
-
-The script now captures both single-document and batched (`encode_batch`) timings for
-`tiktoken` and `bpe_openai` across the requested input lengths and, when matplotlib is installed,
-plots the results (a thin wrapper lives at the repo root under `scripts/benchmark_scaling.py`).
-
-## tiktoken Compatibility Snapshot
-
-| Feature / API                              | Support Status | Notes |
-|--------------------------------------------|----------------|-------|
-| `encoding_for_model`                       | ⚠️              | Works for backend-exposed models (`cl100k_base`, `o200k_base` family, `voyage3_base`); legacy GPT-2 / p50k families are skipped |
-| `get_encoding`                             | ⚠️              | Supports `cl100k_base`, `o200k_base`, `voyage3_base`; legacy GPT-2 / r50k / p50k encodings not yet implemented |
-| `Encoding.encode`                          | ✅              | Calls the Rust `bpe-openai` tokenizer for exact parity |
-| `Encoding.decode`                          | ✅              | Mirrors tiktoken behaviour (UTF-8 validation included) |
-| `Encoding.encode_batch` / `decode_batch`   | ✅              | Batch helpers mirror `tiktoken` signatures |
-| Unsupported model errors                   | ✅              | Raises `UnsupportedModelError` with `supported_models` list |
-| Custom special tokens                      | ❌ Not yet      | Registering extra special tokens is not supported |
-| Chunk limit enforcement                    | ✅              | Uses tokenizer counts and raises `TokenLimitError` |
-| Metrics hook (`set_metrics_hook`)          | ✅              | Emits model, latency, token counts |
-| Rust-backed performance parity             | ✅              | Wheels/binaries use the upstream Rust implementation |
-| Quickstart smoke test (drop-in replacement)| ✅              | Existing scripts run unmodified in tests |
-
-Legend: ✅ fully supported • ⚠️ requires follow-up (documented limitation) • ❌ not yet implemented |
+Contributions are warmly welcomed—whether you are filing a bug, improving
+parity with new OpenAI models, or squeezing out more performance. Open an issue
+or pull request and the Pathlit team will review quickly.

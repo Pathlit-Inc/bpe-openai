@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from importlib import metadata
+from pathlib import Path
 from typing import Iterable
 
 from . import compat
@@ -14,10 +15,26 @@ from .errors import (
 )
 from .tokenizer import Encoding, build_encoding_from_model, build_encoding_from_name
 
+def _local_version() -> str:
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    try:
+        content = pyproject.read_text(encoding="utf-8")
+    except FileNotFoundError:  # pragma: no cover - defensive fallback
+        return "0.0.0"
+
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("version = "):
+            _, value = stripped.split("=", 1)
+            value = value.split("#", 1)[0].strip()
+            return value.strip('"\'')
+    return "0.0.0"
+
+
 try:  # pragma: no cover - package metadata unavailable during local dev
     __version__ = metadata.version("bpe-openai")
 except metadata.PackageNotFoundError:  # pragma: no cover
-    __version__ = "0.1.0"
+    __version__ = _local_version()
 
 __all__ = [
     "Encoding",

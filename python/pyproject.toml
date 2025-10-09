@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "bpe-openai"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python bindings wrapping the bpe-openai Rust tokenizer crate with a tiktoken-compatible API."
 readme = "README.md"
 license = {text = "MIT"}
@@ -30,9 +30,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/github/rust-gems"
-Repository = "https://github.com/github/rust-gems/tree/main/crates/bpe-openai"
-Documentation = "https://github.com/github/rust-gems/tree/main/crates/bpe-openai"
+Homepage = "https://github.com/Pathlit-Inc/bpe-openai"
+Repository = "https://github.com/Pathlit-Inc/bpe-openai"
+Documentation = "https://github.com/Pathlit-Inc/bpe-openai#readme"
 
 [tool.maturin]
 manifest-path = "../rust/Cargo.toml"
