@@ -57,7 +57,7 @@ latency. `bpe-openai` stays effectively flat while `tiktoken` grows sharply with
 input length, unlocking workloads like prompt templating and log chunking that
 stalled with the reference implementation.
 
-![Encoding time vs. input length](scripts/benchmark_scaling.png)
+![Encoding time vs. input length](https://raw.githubusercontent.com/Pathlit-Inc/bpe-openai/main/scripts/benchmark_scaling.png)
 
 ## Smoke test
 
