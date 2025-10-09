@@ -46,4 +46,9 @@ sdist-include = [
     "../LICENSE",
     "../rust/**",
     "../vendor/rust-gems/**",
+    "bpe_openai/data/*.tiktoken.gz",
+]
+
+include = [
+    "bpe_openai/data/*.tiktoken.gz",
 ]
