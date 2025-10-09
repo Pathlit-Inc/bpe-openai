@@ -16,7 +16,7 @@ python/wheels/
 
 # Rust build artifacts
 rust/target/
-Cargo.lock
+/Cargo.lock
 
 # Vendor dependencies
 vendor/**/target/
