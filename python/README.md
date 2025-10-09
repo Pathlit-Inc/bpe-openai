@@ -1,5 +1,8 @@
 # bpe-openai
 
+[![CI](https://github.com/Pathlit-Inc/bpe-openai/actions/workflows/ci.yml/badge.svg)](https://github.com/Pathlit-Inc/bpe-openai/actions/workflows/ci.yml)
+[![Release Wheels](https://github.com/Pathlit-Inc/bpe-openai/actions/workflows/release-wheels.yml/badge.svg)](https://github.com/Pathlit-Inc/bpe-openai/actions/workflows/release-wheels.yml)
+
 `bpe-openai` is a `tiktoken`-compatible tokenizer API backed by the Rust
 `bpe-openai` crate. Pathlit maintains the Python wrapper, while the core
 tokenizer implementation is developed by GitHub and published in the
