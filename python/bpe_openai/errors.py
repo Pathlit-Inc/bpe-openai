@@ -9,7 +9,7 @@ class TokenizerError(RuntimeError):
 
 
 @dataclass
-class UnsupportedModelError(TokenizerError):
+class UnsupportedModelError(KeyError, TokenizerError):
     model_name: str
     supported_models: Sequence[str]
 

@@ -109,6 +109,9 @@ MODEL_REGISTRY: Dict[str, ModelMetadata] = {
     "text-search-ada-doc-001": _metadata("r50k_base", chunk_limit=2_048, special_tokens={"<|endoftext|>": 50_256}),
     "code-search-babbage-code-001": _metadata("r50k_base", chunk_limit=2_048, special_tokens={"<|endoftext|>": 50_256}),
     "code-search-ada-code-001": _metadata("r50k_base", chunk_limit=2_048, special_tokens={"<|endoftext|>": 50_256}),
+    "text-embedding-ada-002": _metadata("cl100k_base", chunk_limit=8_192, special_tokens={}),
+    "text-embedding-3-small": _metadata("cl100k_base", chunk_limit=8_192, special_tokens={}),
+    "text-embedding-3-large": _metadata("cl100k_base", chunk_limit=8_192, special_tokens={}),
 }
 
 
